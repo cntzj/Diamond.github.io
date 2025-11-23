@@ -259,6 +259,20 @@
       // 2. Laser Excitation Level (激光激发)
       const LevelLaser = ({ onNext }) => {
         const [laserActive, setLaserActive] = useState(false);
+        const [missionCompleted, setMissionCompleted] = useState(false);
+
+        const handlePressStart = (e) => {
+            // Prevent default behavior if it's a touch event to stop scrolling/zooming
+            // but we allow mouse events to propagate normally usually.
+            // setMissionCompleted(true) ensures the "Next" button stays visible
+            // even after the user releases the button.
+            setLaserActive(true);
+            setMissionCompleted(true);
+        };
+
+        const handlePressEnd = () => {
+            setLaserActive(false);
+        };
 
         return (
           <div className="w-full h-full flex flex-col items-center justify-between py-4">
@@ -320,23 +334,25 @@
               <div className="flex flex-col gap-4">
                 <button
                   className={`
-                    w-full py-4 md:py-6 rounded-xl font-display font-bold text-lg md:text-xl tracking-wider transition-all duration-200 active:scale-95 border cursor-pointer
+                    w-full py-4 md:py-6 rounded-xl font-display font-bold text-lg md:text-xl tracking-wider transition-all duration-200 active:scale-95 border cursor-pointer select-none
                     ${laserActive 
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)]' 
                       : 'bg-slate-800 text-slate-400 border-slate-600 hover:bg-slate-700'}
                   `}
-                  onMouseDown={() => setLaserActive(true)}
-                  onMouseUp={() => setLaserActive(false)}
-                  onTouchStart={() => setLaserActive(true)}
-                  onTouchEnd={() => setLaserActive(false)}
+                  onMouseDown={handlePressStart}
+                  onMouseUp={handlePressEnd}
+                  onMouseLeave={handlePressEnd}
+                  onTouchStart={handlePressStart}
+                  onTouchEnd={handlePressEnd}
+                  onContextMenu={(e) => e.preventDefault()} // Prevent right click on mobile/desktop hold
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Zap className={laserActive ? 'fill-emerald-300' : ''} />
-                    {laserActive ? '激光发射中...' : '长按发射激光'}
+                    {laserActive ? '激光发射中...' : '按住发射激光'}
                   </div>
                 </button>
 
-                {laserActive && (
+                {missionCompleted && (
                    <button onClick={onNext} className="animate-fade-in w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold flex items-center justify-center gap-2 shadow-lg cursor-pointer">
                      分析光信号 <ArrowRight size={18} />
                    </button>
